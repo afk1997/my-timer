@@ -47,6 +47,38 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
     
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then(registration => {
+                    console.log('ServiceWorker registration successful with scope:', registration.scope);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+        });
+    }
+    
+    // PWA Installation
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // Prevent Chrome 67 and earlier from automatically showing the prompt
+        e.preventDefault();
+        // Stash the event so it can be triggered later
+        deferredPrompt = e;
+        // Optionally, send to analytics
+        console.log('PWA installation prompt available');
+    });
+    
+    // Handle successful installation
+    window.addEventListener('appinstalled', () => {
+        // Clear the deferredPrompt so it can be garbage collected
+        deferredPrompt = null;
+        // Optionally, send to analytics
+        console.log('PWA was installed');
+    });
+    
     // Functions
     function toggleTimer() {
         if (!isRunning) {
@@ -190,17 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Request notification permission
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
         Notification.requestPermission();
-    }
-    
-    // Progressive Web App improvements
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js').then(registration => {
-                console.log('ServiceWorker registered with scope:', registration.scope);
-            }).catch(error => {
-                console.log('ServiceWorker registration failed:', error);
-            });
-        });
     }
 });
 
