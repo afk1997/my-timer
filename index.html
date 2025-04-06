@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#ff6b6b">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -36,6 +37,31 @@
             <div class="controls">
                 <button id="start-btn" class="control-btn">Start</button>
                 <button id="reset-btn" class="control-btn">Reset</button>
+            </div>
+            
+            <div class="sound-settings">
+                <button id="sound-toggle" class="icon-btn">
+                    <span class="material-icons">volume_up</span>
+                </button>
+                <div class="sound-popup">
+                    <h3>Sound Settings</h3>
+                    <div class="sound-option">
+                        <label for="completion-sound">Completion Sound</label>
+                        <input type="checkbox" id="completion-sound" checked>
+                    </div>
+                    <div class="sound-option">
+                        <label for="tick-sound">Tick Sound</label>
+                        <input type="checkbox" id="tick-sound" checked>
+                    </div>
+                    <div class="sound-option">
+                        <label for="countdown-sound">Countdown Sound</label>
+                        <input type="checkbox" id="countdown-sound" checked>
+                    </div>
+                    <div class="sound-option">
+                        <label for="volume">Volume</label>
+                        <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
+                    </div>
+                </div>
             </div>
             
             <div class="session-container">

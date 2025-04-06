@@ -325,4 +325,103 @@ body.short-break-mode .timer::before {
 
 body.long-break-mode .timer::before {
     background: linear-gradient(to right, var(--tertiary-color), var(--tertiary-color));
+}
+
+/* Sound settings */
+.sound-settings {
+    position: relative;
+    margin-top: 10px;
+}
+
+.icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: none;
+    background-color: transparent;
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.sound-popup {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 15px;
+    width: 220px;
+    z-index: 10;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sound-settings.active .sound-popup {
+    display: block;
+    opacity: 1;
+}
+
+.sound-popup h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.sound-option {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.sound-option label {
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.sound-option input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.sound-option input[type="range"] {
+    width: 100px;
+    cursor: pointer;
+}
+
+body.short-break-mode .icon-btn {
+    color: var(--secondary-color);
+}
+
+body.long-break-mode .icon-btn {
+    color: var(--tertiary-color);
+}
+
+/* Responsive styles for sound settings */
+@media (max-width: 480px) {
+    .sound-popup {
+        width: 180px;
+        padding: 12px;
+    }
+    
+    .sound-option {
+        margin-bottom: 6px;
+    }
+    
+    .sound-option label {
+        font-size: 13px;
+    }
 } 

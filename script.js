@@ -8,6 +8,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const sessionCountEl = document.getElementById('session-count');
     const indicators = document.querySelectorAll('.indicator');
     
+    // Sound settings elements
+    const soundToggleBtn = document.getElementById('sound-toggle');
+    const soundSettings = document.querySelector('.sound-settings');
+    const completionSoundCheckbox = document.getElementById('completion-sound');
+    const tickSoundCheckbox = document.getElementById('tick-sound');
+    const countdownSoundCheckbox = document.getElementById('countdown-sound');
+    const volumeControl = document.getElementById('volume');
+    
     // Timer settings
     const TIMER_SETTINGS = {
         pomodoro: 25 * 60, // 25 minutes in seconds
@@ -23,8 +31,27 @@ document.addEventListener('DOMContentLoaded', () => {
     let sessionsCompleted = 0;
     let currentIndicator = 0;
     
+    // Sound settings
+    let soundEnabled = true;
+    let completionSoundEnabled = true;
+    let tickSoundEnabled = true;
+    let countdownSoundEnabled = true;
+    let volume = 0.7;
+    
     // Audio feedback
     const timerCompleteSound = new Audio('https://soundbible.com/grab.php?id=2218&type=mp3');
+    const tickSound = new Audio('https://soundbible.com/grab.php?id=1598&type=mp3');
+    const finalCountdownSound = new Audio('https://soundbible.com/grab.php?id=2156&type=mp3');
+    
+    // Adjust volumes
+    timerCompleteSound.volume = volume;
+    tickSound.volume = volume * 0.4; // Tick sound a bit quieter
+    finalCountdownSound.volume = volume * 0.7;
+    
+    // Preload sounds
+    timerCompleteSound.load();
+    tickSound.load();
+    finalCountdownSound.load();
     
     // Initialize timer display
     updateTimerDisplay();
@@ -36,6 +63,38 @@ document.addEventListener('DOMContentLoaded', () => {
     startBtn.addEventListener('click', toggleTimer);
     resetBtn.addEventListener('click', resetTimer);
     
+    // Sound toggle button
+    soundToggleBtn.addEventListener('click', () => {
+        soundSettings.classList.toggle('active');
+    });
+    
+    // Close sound settings when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!soundSettings.contains(e.target) && e.target !== soundToggleBtn) {
+            soundSettings.classList.remove('active');
+        }
+    });
+    
+    // Sound settings changes
+    completionSoundCheckbox.addEventListener('change', () => {
+        completionSoundEnabled = completionSoundCheckbox.checked;
+    });
+    
+    tickSoundCheckbox.addEventListener('change', () => {
+        tickSoundEnabled = tickSoundCheckbox.checked;
+    });
+    
+    countdownSoundCheckbox.addEventListener('change', () => {
+        countdownSoundEnabled = countdownSoundCheckbox.checked;
+    });
+    
+    volumeControl.addEventListener('input', () => {
+        volume = parseFloat(volumeControl.value);
+        timerCompleteSound.volume = volume;
+        tickSound.volume = volume * 0.4;
+        finalCountdownSound.volume = volume * 0.7;
+    });
+    
     modeButtons.forEach(button => {
         button.addEventListener('click', () => {
             const mode = button.dataset.mode;
@@ -45,38 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
             modeButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
         });
-    });
-    
-    // Service Worker Registration
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-                .then(registration => {
-                    console.log('ServiceWorker registration successful with scope:', registration.scope);
-                })
-                .catch(error => {
-                    console.log('ServiceWorker registration failed:', error);
-                });
-        });
-    }
-    
-    // PWA Installation
-    let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
-        // Prevent Chrome 67 and earlier from automatically showing the prompt
-        e.preventDefault();
-        // Stash the event so it can be triggered later
-        deferredPrompt = e;
-        // Optionally, send to analytics
-        console.log('PWA installation prompt available');
-    });
-    
-    // Handle successful installation
-    window.addEventListener('appinstalled', () => {
-        // Clear the deferredPrompt so it can be garbage collected
-        deferredPrompt = null;
-        // Optionally, send to analytics
-        console.log('PWA was installed');
     });
     
     // Functions
@@ -91,6 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 timeLeft--;
                 updateTimerDisplay();
                 updateProgressBar();
+                
+                // Play tick sound at specific intervals
+                if (timeLeft > 0 && timeLeft <= 5 && countdownSoundEnabled) {
+                    // Play countdown sound for last 5 seconds
+                    playSound(finalCountdownSound);
+                } else if (timeLeft > 0 && timeLeft % 60 === 0 && tickSoundEnabled) {
+                    // Play tick sound every minute
+                    playSound(tickSound);
+                }
                 
                 if (timeLeft <= 0) {
                     timerComplete();
@@ -157,10 +193,24 @@ document.addEventListener('DOMContentLoaded', () => {
         timerEl.style.backgroundSize = `${percentageComplete}% 100%`;
     }
     
+    function playSound(sound) {
+        if (!soundEnabled) return;
+        
+        // Create a new audio element each time to allow overlapping sounds
+        const soundClone = sound.cloneNode();
+        soundClone.play().catch(error => {
+            console.log('Audio playback error:', error);
+        });
+    }
+    
     function timerComplete() {
         clearInterval(timer);
         isRunning = false;
-        timerCompleteSound.play();
+        
+        // Play completion sound with error handling
+        if (completionSoundEnabled) {
+            playSound(timerCompleteSound);
+        }
         
         // Vibrate for mobile devices if supported
         if (navigator.vibrate) {
@@ -222,6 +272,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Request notification permission
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
         Notification.requestPermission();
+    }
+    
+    // Progressive Web App improvements
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('service-worker.js').then(registration => {
+                console.log('ServiceWorker registered with scope:', registration.scope);
+            }).catch(error => {
+                console.log('ServiceWorker registration failed:', error);
+            });
+        });
     }
 });
 
