@@ -1,4 +1,7 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Initialize Farcaster SDK
+    const sdk = window.farcasterSdk;
+    
     // DOM Elements
     const minutesEl = document.getElementById('minutes');
     const secondsEl = document.getElementById('seconds');
@@ -58,6 +61,34 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Apply Pomodoro mode styling by default
     document.body.classList.add('pomodoro-mode');
+    
+    // Tell the Farcaster client we're ready and remove the splash screen
+    try {
+        // Customize UI based on context if needed
+        if (sdk?.context?.user) {
+            console.log('User context:', sdk.context.user);
+            
+            // You could personalize the UI based on user info
+            if (sdk.context.user.displayName) {
+                document.querySelector('h1').textContent = `${sdk.context.user.displayName}'s Timer`;
+            }
+        }
+        
+        // Apply safe area insets if provided
+        if (sdk?.context?.client?.safeAreaInsets) {
+            const { top, bottom, left, right } = sdk.context.client.safeAreaInsets;
+            document.querySelector('.container').style.paddingTop = `${top}px`;
+            document.querySelector('.container').style.paddingBottom = `${bottom}px`;
+            document.querySelector('.container').style.paddingLeft = `${left}px`;
+            document.querySelector('.container').style.paddingRight = `${right}px`;
+        }
+        
+        // Hide the splash screen
+        await sdk.actions.ready();
+        console.log('App is ready');
+    } catch (err) {
+        console.error('Error initializing Farcaster SDK:', err);
+    }
     
     // Event listeners
     startBtn.addEventListener('click', toggleTimer);
@@ -274,14 +305,26 @@ document.addEventListener('DOMContentLoaded', () => {
         Notification.requestPermission();
     }
     
-    // Progressive Web App improvements
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('service-worker.js').then(registration => {
-                console.log('ServiceWorker registered with scope:', registration.scope);
-            }).catch(error => {
-                console.log('ServiceWorker registration failed:', error);
-            });
+    // Farcaster client events
+    if (sdk) {
+        // Listen for when user adds frame
+        sdk.on('frameAdded', () => {
+            console.log('User added the frame');
+            // You could save this to local storage or update the UI
+        });
+        
+        // Listen for when user removes frame
+        sdk.on('frameRemoved', () => {
+            console.log('User removed the frame');
+        });
+        
+        // Listen for notifications enabled/disabled
+        sdk.on('notificationsEnabled', () => {
+            console.log('Notifications enabled');
+        });
+        
+        sdk.on('notificationsDisabled', () => {
+            console.log('Notifications disabled');
         });
     }
 });

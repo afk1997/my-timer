@@ -23,12 +23,16 @@ body {
     justify-content: center;
     align-items: center;
     transition: background-color 0.5s ease;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    overscroll-behavior: none;
 }
 
 .container {
     width: 100%;
     max-width: 500px;
     padding: 20px;
+    overflow-x: hidden;
 }
 
 .timer-container {
@@ -65,6 +69,7 @@ h1 {
     font-weight: 400;
     cursor: pointer;
     transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .mode-btn.active {
@@ -118,6 +123,7 @@ h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .control-btn:hover {
@@ -257,48 +263,6 @@ body.long-break-mode #reset-btn:hover {
     background-color: rgba(136, 216, 176, 0.1);
 }
 
-/* Responsive styles */
-@media (max-width: 768px) {
-    .timer-container {
-        padding: 30px 20px;
-    }
-
-    h1 {
-        font-size: 24px;
-        margin-bottom: 20px;
-    }
-
-    .time-display {
-        font-size: 80px;
-    }
-
-    .control-btn {
-        padding: 12px 30px;
-        font-size: 16px;
-    }
-}
-
-@media (max-width: 480px) {
-    .mode-selector {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
-
-    .mode-btn {
-        padding: 8px 15px;
-        font-size: 14px;
-    }
-
-    .time-display {
-        font-size: 70px;
-    }
-
-    .control-btn {
-        padding: 10px 25px;
-        font-size: 15px;
-    }
-}
-
 /* Progress animation */
 .timer::before {
     content: '';
@@ -345,6 +309,7 @@ body.long-break-mode .timer::before {
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .icon-btn:hover {
@@ -408,6 +373,57 @@ body.short-break-mode .icon-btn {
 
 body.long-break-mode .icon-btn {
     color: var(--tertiary-color);
+}
+
+/* Farcaster Mini App specific styles */
+.fc-app {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    max-width: 424px;
+    margin: 0 auto;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .timer-container {
+        padding: 30px 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+
+    .time-display {
+        font-size: 80px;
+    }
+
+    .control-btn {
+        padding: 12px 30px;
+        font-size: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .mode-selector {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+
+    .mode-btn {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+
+    .time-display {
+        font-size: 70px;
+    }
+
+    .control-btn {
+        padding: 10px 25px;
+        font-size: 15px;
+    }
 }
 
 /* Responsive styles for sound settings */
