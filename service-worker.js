@@ -6,7 +6,9 @@ const ASSETS_TO_CACHE = [
   '/script.js',
   '/manifest.json',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&display=swap',
-  'https://soundbible.com/grab.php?id=2218&type=mp3',
+  'https://soundbible.com/grab.php?id=2218&type=mp3', // Timer complete sound
+  'https://soundbible.com/grab.php?id=1598&type=mp3', // Tick sound
+  'https://soundbible.com/grab.php?id=2156&type=mp3', // Final countdown sound
   'https://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/clock-icon.png'
 ];
 
@@ -15,13 +17,9 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
         return cache.addAll(ASSETS_TO_CACHE);
       })
-      .then(() => {
-        console.log('All assets cached');
-        return self.skipWaiting();
-      })
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -34,15 +32,11 @@ self.addEventListener('activate', (event) => {
           cacheNames.filter((cacheName) => {
             return cacheName !== CACHE_NAME;
           }).map((cacheName) => {
-            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           })
         );
       })
-      .then(() => {
-        console.log('Service Worker activated');
-        return self.clients.claim();
-      })
+      .then(() => self.clients.claim())
   );
 });
 
@@ -56,11 +50,8 @@ self.addEventListener('fetch', (event) => {
           return response;
         }
         
-        // Clone the request because it can only be used once
-        const fetchRequest = event.request.clone();
-        
         // Otherwise fetch from network
-        return fetch(fetchRequest)
+        return fetch(event.request)
           .then((response) => {
             // Check if response is valid
             if (!response || response.status !== 200 || response.type !== 'basic') {
@@ -85,43 +76,4 @@ self.addEventListener('fetch', (event) => {
           });
       })
   );
-});
-
-// Handle push notifications
-self.addEventListener('push', (event) => {
-  const options = {
-    body: event.data.text(),
-    icon: 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/1024/clock-icon.png',
-    badge: 'https://icons.iconarchive.com/icons/paomedia/small-n-flat/48/clock-icon.png',
-    vibrate: [200, 100, 200],
-    data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
-    },
-    actions: [
-      {
-        action: 'explore',
-        title: 'Open Timer'
-      },
-      {
-        action: 'close',
-        title: 'Close'
-      }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification('Pomodoro Timer', options)
-  );
-});
-
-// Handle notification clicks
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'explore') {
-    event.waitUntil(
-      clients.openWindow('/')
-    );
-  }
 }); 
