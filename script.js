@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', async () => {
     // Initialize Farcaster SDK
-    const sdk = window.farcasterSdk;
+    let sdk;
+    try {
+        sdk = window.farcasterSdk;
+        if (!sdk) {
+            console.error('Farcaster SDK not found');
+            return;
+        }
+    } catch (err) {
+        console.error('Error initializing Farcaster SDK:', err);
+        return;
+    }
     
     // DOM Elements
     const minutesEl = document.getElementById('minutes');
@@ -51,24 +61,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     tickSound.volume = volume * 0.4; // Tick sound a bit quieter
     finalCountdownSound.volume = volume * 0.7;
     
-    // Preload sounds
-    timerCompleteSound.load();
-    tickSound.load();
-    finalCountdownSound.load();
-    
-    // Initialize timer display
-    updateTimerDisplay();
-    
-    // Apply Pomodoro mode styling by default
-    document.body.classList.add('pomodoro-mode');
-    
-    // Tell the Farcaster client we're ready and remove the splash screen
-    try {
+    // Initialize everything first
+    function init() {
+        updateTimerDisplay();
+        document.body.classList.add('pomodoro-mode');
+        
+        // Load sounds
+        timerCompleteSound.load();
+        tickSound.load();
+        finalCountdownSound.load();
+        
         // Customize UI based on context if needed
         if (sdk?.context?.user) {
             console.log('User context:', sdk.context.user);
-            
-            // You could personalize the UI based on user info
             if (sdk.context.user.displayName) {
                 document.querySelector('h1').textContent = `${sdk.context.user.displayName}'s Timer`;
             }
@@ -83,12 +88,42 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.querySelector('.container').style.paddingRight = `${right}px`;
         }
         
-        // Hide the splash screen
-        await sdk.actions.ready();
-        console.log('App is ready');
-    } catch (err) {
-        console.error('Error initializing Farcaster SDK:', err);
+        // Setup Farcaster event listeners
+        setupFarcasterEvents();
+        
+        // Finally tell the client we're ready
+        sdk.actions.ready()
+            .then(() => console.log('App is ready'))
+            .catch(err => console.error('Error calling ready():', err));
     }
+    
+    function setupFarcasterEvents() {
+        if (!sdk) return;
+        
+        sdk.on('frameAdded', () => {
+            console.log('User added the frame');
+            // Save to localStorage that user has added the frame
+            localStorage.setItem('frameAdded', 'true');
+        });
+        
+        sdk.on('frameRemoved', () => {
+            console.log('User removed the frame');
+            localStorage.removeItem('frameAdded');
+        });
+        
+        sdk.on('notificationsEnabled', () => {
+            console.log('Notifications enabled');
+            localStorage.setItem('notificationsEnabled', 'true');
+        });
+        
+        sdk.on('notificationsDisabled', () => {
+            console.log('Notifications disabled');
+            localStorage.removeItem('notificationsEnabled');
+        });
+    }
+    
+    // Initialize the app
+    init();
     
     // Event listeners
     startBtn.addEventListener('click', toggleTimer);
@@ -304,29 +339,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
         Notification.requestPermission();
     }
-    
-    // Farcaster client events
-    if (sdk) {
-        // Listen for when user adds frame
-        sdk.on('frameAdded', () => {
-            console.log('User added the frame');
-            // You could save this to local storage or update the UI
-        });
-        
-        // Listen for when user removes frame
-        sdk.on('frameRemoved', () => {
-            console.log('User removed the frame');
-        });
-        
-        // Listen for notifications enabled/disabled
-        sdk.on('notificationsEnabled', () => {
-            console.log('Notifications enabled');
-        });
-        
-        sdk.on('notificationsDisabled', () => {
-            console.log('Notifications disabled');
-        });
-    }
 });
 
 // Apply progress bar animation
@@ -345,4 +357,4 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.style.cursor = 'default';
         });
     });
-}); 
+});
